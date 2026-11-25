@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>THREXA 3.0 | Threat Investigation Workbench</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://unpkg.com/cytoscape@3.28.1/dist/cytoscape.min.js"></script>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="eyebrow">SECURITY OPERATIONS • GRAPH ANALYTICS</div>
+    <h1>THREXA<span> 3.0</span></h1>
+  </div>
+  <div class="header-meta">
+    <span class="pill">SYNTHETIC DATA • DECISION SUPPORT</span>
+    <span class="status">JSON Mode</span><span id="sessionBadge" class="pill">Signed out</span><button class="ghost tiny" id="logoutBtn">Sign out</button>
+  </div>
+</header>
+
+<div id="authGate" class="auth-gate"><div class="auth-card"><p class="eyebrow">SECURE ACCESS</p><h2>THREXA Authentication</h2><p id="authHint">Sign in or create the first administrator account.</p><label>Username<input id="authUser" autocomplete="username" placeholder="admin"></label><label>Password<input id="authPass" type="password" autocomplete="current-password" placeholder="12+ characters"></label><button class="primary" id="authSubmit">Sign in</button><button class="ghost" id="authBootstrap">Create first admin</button><p id="authMessage" class="muted"></p></div></div>
+<main>
+  <section class="hero">
+    <div>
+      <p class="eyebrow">INTELLIGENT THREAT INVESTIGATION</p>
+      <h2>From disconnected alerts to connected, explainable stories.</h2>
+      <p class="lead">Explore relationships, calculate blast radius, trace attack paths, identify structural choke points, and receive clear investigation priorities — all on an interactive knowledge graph.</p>
+    </div>
+    <div class="hero-actions">
+      <button class="primary" id="demoBtn">▶ Run Guided Demo</button>
+      <button class="ghost" id="copilotBtn">Explain Current Situation</button>
+    </div>
+  </section>
+
+  <section class="stats" id="stats">
+    <div class="stat"><span>NODES</span><strong id="nodeCount">—</strong></div>
+    <div class="stat"><span>RELATIONSHIPS</span><strong id="edgeCount">—</strong></div>
+    <div class="stat"><span>OPEN ALERTS</span><strong id="alertCount">—</strong></div>
+    <div class="stat"><span>CRITICAL ASSETS</span><strong id="criticalCount">—</strong></div>
+  </section>
+
+  <section class="workspace">
+    <div class="panel graph-panel">
+      <div class="panel-head">
+        <div>
+          <p class="eyebrow">01 / SECURITY GRAPH</p>
+          <h3>Connected Environment</h3>
+        </div>
+        <span class="pill">INTERACTIVE • FORCE LAYOUT</span>
+      </div>
+      <div class="legend">
+        <span><i class="user"></i>User</span>
+        <span><i class="device"></i>Device</span>
+        <span><i class="server"></i>Server</span>
+        <span><i class="app"></i>Application</span>
+        <span><i class="db"></i>Database</span>
+        <span><i class="service"></i>Service</span>
+        <span><i class="ip"></i>IP</span>
+      </div>
+      <div id="cy" class="graph-wrap"></div>
+      <div class="graph-foot">
+        <span id="selectedLabel">Select a node to inspect it.</span>
+        <div>
+          <button class="ghost tiny" id="fitBtn">Fit</button>
+          <button class="ghost tiny" id="resetBtn">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <aside class="panel inspector">
+      <p class="eyebrow">02 / INVESTIGATION CONSOLE</p>
+      <h3>Analyst Tools</h3>
+
+      <label>Blast Radius Source</label>
+      <select id="sourceSelect"></select>
+      <button class="primary" id="blastBtn">Calculate Blast Radius</button>
+      <div id="blastResult" class="result empty">Choose an asset.</div>
+
+      <label>Attack Path</label>
+      <div class="path-row">
+        <select id="pathSource"></select>
+        <span>→</span>
+        <select id="pathTarget"></select>
+      </div>
+      <button class="primary" id="pathBtn">Find Attack Path</button>
+      <div id="pathResult" class="result empty">Select source and target.</div>
+
+      <button class="secondary" id="chokeBtn">Rank Choke Points</button>
+      <div id="chokeResult" class="result empty">Structural centrality ranking.</div>
+
+      <button class="secondary" id="nextBtn">Recommend Next Investigation Step</button>
+      <div id="nextResult" class="result empty">Priority based on centrality, alerts, and criticality.</div>
+
+      <button class="secondary" id="isolationBtn">Preview Isolation Impact</button>
+      <div id="isolationResult" class="result empty">Select a node first.</div>
+    </aside>
+  </section>
+
+  <section class="panel" id="copilotPanel" style="display:none;">
+    <div class="panel-head">
+      <div>
+        <p class="eyebrow">03 / INVESTIGATION COPILOT</p>
+        <h3>Evidence-Backed Explanation</h3>
+      </div>
+    </div>
+    <div id="copilotContent" class="result"></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div>
+        <p class="eyebrow">04 / ALERTS</p>
+        <h3>Related Alerts</h3>
+      </div>
+    </div>
+    <div id="alertsList" class="alerts"></div>
+  </section>
+
+  <section class="panel advanced-panel" id="operations">
+    <div class="panel-head"><div><p class="eyebrow">05 / OPERATIONS</p><h3>Log Ingestion & Evidence</h3></div><span class="pill">CSV / JSON • LOCAL STORAGE</span></div>
+    <p class="muted">Upload normalized security events. Each event must reference at least one asset ID in the graph (for example D01 or DB01).</p>
+    <div class="control-row"><input type="file" id="logFile" accept=".csv,.json"><button class="primary" id="ingestBtn">Import Events</button><button class="ghost" id="refreshEventsBtn">Refresh</button></div>
+    <div id="ingestMessage" class="result empty">No import performed yet.</div><div id="eventsList" class="table-wrap"></div>
+  </section>
+
+  <section class="panel advanced-panel" id="timeline">
+    <div class="panel-head"><div><p class="eyebrow">06 / EVENT CORRELATION</p><h3>Investigation Timeline</h3></div><button class="ghost tiny" id="timelineRefreshBtn">Refresh timeline</button></div>
+    <p class="muted">Chronological view combining bundled synthetic alerts and separately labelled uploaded evidence.</p><div id="timelineList" class="timeline-list"></div>
+  </section>
+
+  <section class="panel advanced-panel" id="threatintel">
+    <div class="panel-head"><div><p class="eyebrow">07 / THREAT INTELLIGENCE</p><h3>IOC Registry</h3></div><span class="pill">LOCAL INDICATORS</span></div>
+    <div class="form-grid"><label>Indicator type<select id="iocKind"><option>ip</option><option>domain</option><option>hash</option><option>url</option></select></label><label>Indicator value<input id="iocValue" placeholder="e.g. 203.0.113.10 or suspicious.example"></label><label>Threat label<input id="iocThreat" value="suspicious"></label><label>Confidence (0–100)<input id="iocConfidence" type="number" min="0" max="100" value="50"></label></div>
+    <button class="primary" id="addIocBtn">Add indicator</button><div id="iocMessage" class="result empty">Analyst-maintained IOC registry. No live reputation lookup is performed.</div><div id="iocList" class="table-wrap"></div>
+  </section>
+
+  <section class="panel advanced-panel" id="incidents">
+    <div class="panel-head"><div><p class="eyebrow">08 / CASE MANAGEMENT</p><h3>Incident Center</h3></div><span class="pill">PERSISTENT • SQLITE</span></div>
+    <div class="form-grid"><label>Incident title<input id="incidentTitle" placeholder="e.g. Suspicious activity on Laptop-07"></label><label>Severity<select id="incidentSeverity"><option>critical</option><option selected>high</option><option>medium</option><option>low</option></select></label><label>Related asset IDs<input id="incidentEntities" placeholder="D01, IP01, DB01"></label><label>Description<input id="incidentDescription" placeholder="Evidence summary and analyst context"></label></div>
+    <button class="primary" id="createIncidentBtn">Create Incident</button><div id="incidentMessage" class="result empty">Create a case from validated graph entities.</div><div id="incidentList" class="incident-list"></div>
+  </section>
+
+  <section class="panel advanced-panel" id="risk">
+    <div class="panel-head"><div><p class="eyebrow">07 / PRIORITIZATION</p><h3>Dynamic Risk Assessment</h3></div><button class="ghost tiny" id="riskRefreshBtn">Recalculate</button></div>
+    <p class="muted">Transparent heuristic: asset criticality 45%, uploaded event activity 35%, graph centrality 20%. This is not a probability of compromise.</p><div id="riskList" class="table-wrap">Loading risk model…</div>
+  </section>
+
+  <section class="panel advanced-panel" id="simulation">
+    <div class="panel-head"><div><p class="eyebrow">08 / WHAT-IF LAB</p><h3>Attack Impact Simulation</h3></div><span class="pill">NON-DESTRUCTIVE</span></div>
+    <div class="control-row"><label>Hypothetical compromised asset<select id="simulationNode"></select></label><button class="primary" id="simulateBtn">Run Simulation</button></div><div id="simulationResult" class="result empty">Choose an asset to model potential reachability and business-service impact.</div>
+  </section>
+
+ 
+  <section class="panel advanced-panel" id="shadowGraph">
+    <div class="panel-head"><div><p class="eyebrow">09 / SHADOW GRAPH INTELLIGENCE</p><h3>Isolated Scenario Lab</h3></div><span class="pill">SNAPSHOT • NON-DESTRUCTIVE</span></div>
+    <p class="muted">Create a versioned analytical copy of the relationship graph, simulate a compromised asset, and optionally remove/contain assets in that copy. The original graph is never modified.</p>
+    <div class="form-grid"><label>Scenario name<input id="shadowName" value="Compromised endpoint drill"></label><label>Compromised asset<select id="shadowSource"></select></label><label>Simulated blocked assets (comma-separated IDs)<input id="shadowBlocked" placeholder="e.g. SRV01, DB01"></label></div>
+    <button class="primary" id="shadowRunBtn">Create Shadow Scenario</button><div id="shadowResult" class="result empty">No scenario created yet.</div><div id="shadowHistory" class="table-wrap"></div>
+  </section>
+  <section class="panel advanced-panel" id="accessAdmin">
+    <div class="panel-head"><div><p class="eyebrow">10 / PLATFORM SECURITY</p><h3>User & Audit Management</h3></div><span class="pill">RBAC</span></div>
+    <div class="form-grid"><label>New username<input id="newUsername" placeholder="analyst01"></label><label>Temporary password<input id="newPassword" type="password" placeholder="12+ characters"></label><label>Role<select id="newRole"><option>Analyst</option><option>SOC Manager</option><option>Viewer</option><option>Admin</option></select></label></div>
+    <button class="primary" id="createUserBtn">Create User (Admin)</button><div id="userAdminResult" class="result empty">Only administrators can create accounts and view audit history.</div><div id="auditList" class="table-wrap"></div>
+  </section>
+\n  <section class="panel advanced-panel" id="playbooks">
+    <div class="panel-head"><div><p class="eyebrow">09 / RESPONSE GUIDANCE</p><h3>Response Playbooks</h3></div></div>
+    <div class="control-row"><label>Incident severity<select id="playbookSeverity"><option>critical</option><option selected>high</option><option>medium</option><option>low</option></select></label><button class="primary" id="playbookBtn">Generate Playbook</button></div><div id="playbookResult" class="result empty">Human-approved recommendations only. No production action is executed.</div>
+  </section>
+
+  <section class="panel advanced-panel" id="assistant">
+    <div class="panel-head"><div><p class="eyebrow">10 / ANALYST ASSISTANT</p><h3>THREXA Copilot</h3></div><span class="pill">LOCAL • EXPLAINABLE</span></div>
+    <div class="control-row"><input id="copilotQuestion" placeholder="Ask about risk, attack paths, incidents or events…"><button class="primary" id="askCopilotBtn">Ask</button></div><div id="chatAnswer" class="result empty">This demo assistant uses local, transparent rules and project evidence—not a hosted LLM.</div>
+  </section>
+
+  <section class="panel advanced-panel">
+    <div class="panel-head"><div><p class="eyebrow">11 / JUDGE-READY OUTPUT</p><h3>Investigation Report</h3></div><a class="button-link" href="/api/report">Export JSON Report ↓</a></div>
+    <p class="muted">Exports current incident records, uploaded-event counts, scope notes and operational limitations.</p>
+  </section>
+
+  <footer class="footer">
+    <p>THREXA 2.0 — Synthetic demonstration for security investigation. Graph reachability is not proof of compromise. Designed as transparent decision support for analysts.</p>
+  </footer>
+</main>
+
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+<script src="{{ url_for('static', filename='advanced.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,213 @@
+{
+  "nodes": [
+    {
+      "id": "IP01",
+      "label": "External IP 185.x",
+      "type": "ip",
+      "criticality": "high",
+      "description": "Suspicious external IP observed in phishing-related traffic"
+    },
+    {
+      "id": "U01",
+      "label": "Asha (Employee)",
+      "type": "user",
+      "criticality": "medium",
+      "description": "Regular employee account"
+    },
+    {
+      "id": "U02",
+      "label": "Admin Account",
+      "type": "user",
+      "criticality": "critical",
+      "description": "Privileged administrator account"
+    },
+    {
+      "id": "D01",
+      "label": "Laptop-07",
+      "type": "device",
+      "criticality": "high",
+      "description": "Employee laptop that received the phishing email"
+    },
+    {
+      "id": "D02",
+      "label": "Laptop-12",
+      "type": "device",
+      "criticality": "medium",
+      "description": "Second employee laptop on same network segment"
+    },
+    {
+      "id": "D03",
+      "label": "Admin Workstation",
+      "type": "device",
+      "criticality": "critical",
+      "description": "Workstation used for privileged administration"
+    },
+    {
+      "id": "S01",
+      "label": "File Server",
+      "type": "server",
+      "criticality": "high",
+      "description": "Shared file server hosting departmental documents"
+    },
+    {
+      "id": "S02",
+      "label": "App Server",
+      "type": "server",
+      "criticality": "high",
+      "description": "Internal application server"
+    },
+    {
+      "id": "S03",
+      "label": "Print Server",
+      "type": "server",
+      "criticality": "low",
+      "description": "Print services"
+    },
+    {
+      "id": "APP01",
+      "label": "HR Portal",
+      "type": "application",
+      "criticality": "high",
+      "description": "Internal HR application"
+    },
+    {
+      "id": "APP02",
+      "label": "Finance App",
+      "type": "application",
+      "criticality": "critical",
+      "description": "Finance application with access to payroll systems"
+    },
+    {
+      "id": "DB01",
+      "label": "Payroll Database",
+      "type": "database",
+      "criticality": "critical",
+      "description": "Critical payroll and compensation database"
+    },
+    {
+      "id": "DB02",
+      "label": "User Directory",
+      "type": "database",
+      "criticality": "high",
+      "description": "Identity and access directory"
+    },
+    {
+      "id": "SVC01",
+      "label": "Payroll Processing",
+      "type": "business_service",
+      "criticality": "critical",
+      "description": "Business service that processes employee payroll"
+    },
+    {
+      "id": "SVC02",
+      "label": "Document Collaboration",
+      "type": "business_service",
+      "criticality": "high",
+      "description": "Team document sharing and collaboration service"
+    },
+    {
+      "id": "IP02",
+      "label": "Internal Gateway",
+      "type": "ip",
+      "criticality": "medium",
+      "description": "Internal network gateway"
+    }
+  ],
+  "edges": [
+    {
+      "source": "D01",
+      "target": "IP01",
+      "relation": "network_event"
+    },
+    {
+      "source": "U01",
+      "target": "D01",
+      "relation": "uses"
+    },
+    {
+      "source": "D01",
+      "target": "S01",
+      "relation": "connects_to"
+    },
+    {
+      "source": "D01",
+      "target": "D02",
+      "relation": "shares_network"
+    },
+    {
+      "source": "U02",
+      "target": "D03",
+      "relation": "uses"
+    },
+    {
+      "source": "D03",
+      "target": "S01",
+      "relation": "admin_session"
+    },
+    {
+      "source": "D03",
+      "target": "S02",
+      "relation": "admin_session"
+    },
+    {
+      "source": "S01",
+      "target": "APP01",
+      "relation": "hosts"
+    },
+    {
+      "source": "S02",
+      "target": "APP02",
+      "relation": "hosts"
+    },
+    {
+      "source": "APP02",
+      "target": "DB01",
+      "relation": "reads_from"
+    },
+    {
+      "source": "APP01",
+      "target": "DB02",
+      "relation": "reads_from"
+    },
+    {
+      "source": "S01",
+      "target": "SVC02",
+      "relation": "depends_on"
+    },
+    {
+      "source": "APP02",
+      "target": "SVC01",
+      "relation": "depends_on"
+    },
+    {
+      "source": "DB01",
+      "target": "SVC01",
+      "relation": "depends_on"
+    },
+    {
+      "source": "D01",
+      "target": "IP02",
+      "relation": "connects_to"
+    },
+    {
+      "source": "S02",
+      "target": "IP02",
+      "relation": "connects_to"
+    },
+    {
+      "source": "U02",
+      "target": "APP02",
+      "relation": "administers"
+    },
+    {
+      "source": "D03",
+      "target": "DB01",
+      "relation": "admin_session"
+    },
+    {
+      "source": "S01",
+      "target": "D03",
+      "relation": "possible_lateral_movement"
+    }
+  ]
+}

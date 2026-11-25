@@ -1,0 +1,5 @@
+time,severity,title,description,entities
+2026-11-25T09:10:00Z,high,Unusual login,Repeated authentication failures followed by success,"U02,S01"
+2026-11-25T09:14:00Z,critical,Unexpected database access,Privileged session observed against payroll database,"D03,DB01,U02"
+2026-11-25T09:18:00Z,medium,Unusual outbound traffic,New outbound connection from employee laptop,"D01,IP01"
+2026-11-25T09:22:00Z,high,Large finance query,Finance application queried unusual data volume,"APP02,DB01"

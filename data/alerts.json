@@ -1,0 +1,47 @@
+[
+  {
+    "id": "AL-001",
+    "time": "2026-11-24T09:15:00Z",
+    "severity": "high",
+    "title": "Suspicious email attachment opened",
+    "description": "User opened a document containing a macro from an external sender.",
+    "entities": ["D01", "U01", "IP01"],
+    "status": "open"
+  },
+  {
+    "id": "AL-002",
+    "time": "2026-11-24T09:22:00Z",
+    "severity": "high",
+    "title": "Outbound connection to rare external IP",
+    "description": "Laptop-07 established an outbound connection to a rarely seen external IP.",
+    "entities": ["D01", "IP01"],
+    "status": "open"
+  },
+  {
+    "id": "AL-003",
+    "time": "2026-11-24T09:35:00Z",
+    "severity": "medium",
+    "title": "Multiple failed logins followed by success",
+    "description": "Unusual authentication pattern observed on File Server.",
+    "entities": ["S01", "U02"],
+    "status": "open"
+  },
+  {
+    "id": "AL-004",
+    "time": "2026-11-24T10:05:00Z",
+    "severity": "critical",
+    "title": "Privileged session from Admin Workstation to Payroll DB",
+    "description": "Admin session detected against critical Payroll Database.",
+    "entities": ["D03", "DB01", "U02"],
+    "status": "open"
+  },
+  {
+    "id": "AL-005",
+    "time": "2026-11-24T10:12:00Z",
+    "severity": "high",
+    "title": "Unusual data volume from Finance App",
+    "description": "Finance application queried larger-than-normal volume from Payroll Database.",
+    "entities": ["APP02", "DB01"],
+    "status": "open"
+  }
+]
